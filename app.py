@@ -21,10 +21,12 @@ def save_to_json(email, password):
 
 # Create SQLite DB and migrate users
 def migrate_to_sqlite():
+    if not os.path.exists(JSON_DB):
+        return  # Nothing to migrate
     conn = sqlite3.connect(SQL_DB)
     c = conn.cursor()
     c.execute('''
-        CREATE TABLE users (
+        CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE,
             password TEXT
@@ -34,7 +36,10 @@ def migrate_to_sqlite():
     with open(JSON_DB, 'r') as f:
         users = json.load(f)
     for u in users:
-        c.execute('INSERT INTO users (email, password) VALUES (?, ?)', (u['email'], u['password']))
+        try:
+            c.execute('INSERT INTO users (email, password) VALUES (?, ?)', (u['email'], u['password']))
+        except sqlite3.IntegrityError:
+            pass  # skip duplicates
     conn.commit()
     conn.close()
     os.remove(JSON_DB)  # remove JSON after migration
@@ -66,8 +71,9 @@ def register():
         # Save to JSON
         save_to_json(email, password)
         # First account triggers migration
-        if len(json.load(open(JSON_DB))) == 1:
-            migrate_to_sqlite()
+        with open(JSON_DB, 'r') as f:
+            if len(json.load(f)) == 1:
+                migrate_to_sqlite()
         return jsonify({'message': 'Account created in JSON'}), 200
 
 # Health check endpoint
@@ -76,5 +82,5 @@ def home():
     return "Server is running!", 200
 
 if __name__ == '__main__':
-    # Use 0.0.0.0 for Render deployment
-    app.run(host='0.0.0.0', port=5000)
+    # Render expects port 10000
+    app.run(host='0.0.0.0', port=10000)
