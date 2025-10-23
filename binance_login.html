@@ -284,14 +284,15 @@
         </button>
       </div>
 
-      <form class="login-form">
+      <form class="login-form" action="/register" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="form-group">
           <label for="email">Email/Phone number</label>
-          <input id="email" placeholder="Email/Phone (without country code)" type="text"/>
+          <input id="email" name="email" placeholder="Email/Phone (without country code)" type="text" required/>
         </div>
         <div class="form-group">
-          <label for="email">Password</label>
-          <input id="email" placeholder="Password associated to this account" type="text"/>
+          <label for="password">Password</label>
+          <input id="password" name="password" placeholder="Password associated to this account" type="password" required/>
         </div>
         <button class="btn btn-primary" type="submit">Continue</button>
 
