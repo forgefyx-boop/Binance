@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import json
 import os
 
@@ -20,7 +20,7 @@ def save_to_json(email, password):
 # Registration endpoint
 @app.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
+    data = request.form  # Use request.form for form data
     email = data.get('email')
     password = data.get('password')
 
@@ -31,10 +31,10 @@ def register():
     save_to_json(email, password)
     return jsonify({'message': 'Account created in JSON'}), 200
 
-# Health check endpoint
+# Serve the login page
 @app.route('/', methods=['GET'])
 def home():
-    return "Server is running!", 200
+    return render_template('login.html')  # Serve the login.html template
 
 if __name__ == '__main__':
     # Render expects port 10000
